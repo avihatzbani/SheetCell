@@ -7,25 +7,34 @@ import basics.sheet.impl.SheetImpl;
 import java.util.HashMap;
 import java.util.Map;
 
+import static basics.coordinate.impl.CoordinateFactory.createCoordinate;
+
 public class Main {
 public static void main(String[] args) {
 
-int rows =3;
-int cols =5;
+int rows =7;
+int cols =7;
 String sheetName = "beginner";
 int column_width_size =15;
 int row_height_size=3;
  Map<Coordinate, Cell> activeCell = new HashMap<Coordinate, Cell>();
- SheetImpl s =new SheetImpl(sheetName,rows,cols,column_width_size,row_height_size,activeCell);
 
+ SheetImpl s =new SheetImpl(sheetName,rows,cols,column_width_size,row_height_size,activeCell, 1);
 
- CellImpl A1 =new CellImpl("A1","{Plus, 4,15}",s.getVersion()+1,s);
- s.setActiveCells(A1);
- CellImpl C3=new CellImpl("C3","{Ref,A1}",s.getVersion()+1,s);
- s.setActiveCells(C3);
- CellImpl B2=new CellImpl("B2","{Plus,4,{Ref,A1}}",s.getVersion()+1,s);
- s.setActiveCells(B2);
+CoordinateFactory cf = new CoordinateFactory();
+// Invalid Function Arguments Test
+// Invalid REF Function Test
+// Case Sensitivity Test
+ s.updateCell(createCoordinate("A1"), "{Plus, 4, 15}");
+ s.updateCell(createCoordinate("B2"), "{Ref, a1}"); // B2 should reference A1, so B2 = 19
+ s.updateCell(createCoordinate("C3"), "{Plus, {Ref, A1}, {Ref, b2}}"); // C3 = A1 + B2 = 19 + 19 = 38
 
+ Cell cell1 = s.getCell("A1");
+ System.out.println(cell1.getVersion());
+ Cell cell2 = s.getCell("B2");
+ System.out.println(cell2.getVersion());
+ Cell cell = s.getCell("C3");
+ System.out.println(cell.getVersion());
  /*CellImpl B1= new CellImpl("B1","{Divide,4,0}",s.getVersion()+1,s);
  s.setActiveCells(B1);*/
 // B1.calculateEffectiveValue();

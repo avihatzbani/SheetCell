@@ -4,6 +4,7 @@ import basics.cell.api.Cell;
 import basics.coordinate.api.Coordinate;
 import basics.cell.impl.CellImpl;
 import basics.coordinate.impl.CoordinateFactory;
+import basics.graph.GraphImpl.SheetGraph;
 import basics.sheet.api.Sheet;
 
 import java.util.*;
@@ -19,7 +20,7 @@ public class SheetImpl implements Sheet {
     private Map<Coordinate, Cell> activeCells;
     CoordinateFactory coordinateFactory;
 
-    public SheetImpl(String name, int rows, int column, int column_width_size, int rowsHeightSize, Map<Coordinate, Cell> activeCells) {
+    public SheetImpl(String name, int rows, int column, int column_width_size, int rowsHeightSize, Map<Coordinate, Cell> activeCells, int version) {
         this.activeCells = new HashMap<>();
         this.name = name;
         this.rows = rows;
@@ -142,26 +143,40 @@ public class SheetImpl implements Sheet {
         }
     }
 
-    public Sheet deepCopy() {
-        SheetImpl newSheet = new SheetImpl(name, rows, columns, columnWidthSize, rowsHeightSize, null);
+    public SheetImpl deepCopy() {
+        SheetImpl newSheet = new SheetImpl(name, rows, columns, columnWidthSize, rowsHeightSize, null, version);
         Map<Coordinate, Cell> copiedCells = new HashMap<>();
+
+        // Step 1: Copy all cells
         for (Map.Entry<Coordinate, Cell> entry : this.activeCells.entrySet()) {
             Cell copiedCell = new CellImpl(entry.getValue(), newSheet);
             copiedCells.put(entry.getKey(), copiedCell);
         }
+
+        // Step 2: Copy dependencies (dependsOn and influenceOn)
         for (Map.Entry<Coordinate, Cell> entry : copiedCells.entrySet()) {
             Cell copiedCell = entry.getValue();
             Cell originalCell = activeCells.get(entry.getKey());
-            for (Cell depends : originalCell.getDependsOn()) {
 
-                Cell copiedDepends = copiedCells.get(depends.getCoordinate());
-                copiedCell.addCellToDependsOn(copiedDepends);
-                copiedDepends.addCellToInfluenceOn(copiedCell);
+            if (originalCell != null) {
+                for (Cell depends : originalCell.getDependsOn()) {
+                    if (depends != null) {
+                        Cell copiedDepends = copiedCells.get(depends.getCoordinate());
+                        if (copiedDepends != null) {
+                            copiedCell.addCellToDependsOn(copiedDepends);
+                            copiedDepends.addCellToInfluenceOn(copiedCell);
+                        }
+                    }
+                }
             }
         }
+
+        // Step 3: Set the copied cells to the new sheet
         newSheet.activeCells = copiedCells;
         return newSheet;
     }
+
+
 
     public void printSheet(Map<Coordinate, Cell> activeCells) {
         // Print sheet name and version
@@ -207,7 +222,53 @@ public class SheetImpl implements Sheet {
             // Move to the next line after finishing the current rows
             System.out.println();
         }
+
+
+
     }
 
-}
+
+    public void updateCell(Coordinate coordinate, String newValue) {
+        // Step 1: Deep copy the current sheet
+        SheetImpl newSheet = this.deepCopy();
+        newSheet.setVersion();
+        // Step 2: Retrieve the cell to update in the new sheet
+        Cell cellToUpdate = newSheet.getActiveCells().get(coordinate);
+        if (cellToUpdate == null) {
+            // If the cell doesn't exist, create a new one
+            cellToUpdate = new CellImpl(coordinate.getCellId(), newValue, this.version + 1, newSheet);
+            newSheet.getActiveCells().put(coordinate, cellToUpdate);
+        } else {
+            // Otherwise, update the existing cell's value
+            cellToUpdate.updateCellOriginalValue(newValue);
+        }
+
+        try {
+            // Step 3: Perform topological sort to detect cycles and get the correct update order
+            SheetGraph graph = new SheetGraph(newSheet);
+            List<Cell> sortedCells = graph.topologicalSort();
+
+            if (sortedCells == null || sortedCells.isEmpty()) {
+                // If sortedCells is null or empty, a cycle was detected, and the update is invalid
+                throw new IllegalStateException("Circular dependency detected or no valid update order. Update aborted.");
+            }
+
+            // Step 4: Update all cells' effective values in the correct order
+            for (Cell cell : sortedCells) {
+                cell.calculateEffectiveValue();
+            }
+
+            // Step 5: If all updates are successful, replace the activeCells map in the current sheet
+            this.activeCells = newSheet.getActiveCells();
+            this.version = newSheet.getVersion();
+
+
+        } catch (Exception e) {
+            // Step 6: Handle any exceptions (e.g., invalid expressions) and abort the update
+            System.err.println("Error updating cell: " + e.getMessage());
+            // The original sheet remains unchanged if any error occurs
+        }
+    }
+
+};
 

@@ -8,6 +8,9 @@ public class CoordinateFactory {
     private static Map<String, Coordinate> cachedCoordinates = new HashMap<>();
 
     public static Coordinate createCoordinate(String cellId) {
+        if (cellId.length()!=2)
+            throw new IllegalArgumentException("Invalid cell ID");
+        cellId = cellId.substring(0,1).toUpperCase() + cellId.substring(1);
         // Use cellId like "D5" as the key in the cache
         if (cachedCoordinates.containsKey(cellId)) {
             return cachedCoordinates.get(cellId);
@@ -19,6 +22,7 @@ public class CoordinateFactory {
 
         return coordinate;
     }
+
     //Aviad
     public static Coordinate createCoordinate(int row, int column) {
         String key = row + ":" + column;

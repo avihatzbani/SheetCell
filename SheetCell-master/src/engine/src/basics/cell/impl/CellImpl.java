@@ -23,10 +23,10 @@ public class CellImpl implements Cell {
 
     public CellImpl(String cellId, String originalValue, int version,SheetImpl sheet)  {
 
+        sheet.setVersion();
         this.coordinate = createCoordinate(cellId);
         this.originalValue = originalValue;
         this.version = version;
-        sheet.setVersion();
         this.dependsOn = new ArrayList<>();
         this.influencingOn = new ArrayList<>();
         this.sheet=sheet;
@@ -34,8 +34,8 @@ public class CellImpl implements Cell {
 
     }
 
-    public Cell deepCopy(SheetImpl newSheet) {
-        return new CellImpl(this, newSheet);
+    public Cell deepCopy(Cell cell, SheetImpl newSheet) {
+        return new CellImpl(cell, newSheet);
     }
 
     public CellImpl(Cell cell, SheetImpl newSheet) {
@@ -61,8 +61,20 @@ public class CellImpl implements Cell {
     }
 
     @Override
-    public void setCellOriginalValue(String value) {
+    public void updateCellOriginalValue(String value) {
+        if (value.toString() != originalValue.toString())
+        {
+            for (Cell Influencing : dependsOn)
+            {
+                Influencing.getInfluencingOn().remove(this);
+            }
+            for (Cell Influenced : influencingOn)
+            {
+                Influenced.getDependsOn().remove(this);
+            }
+        }
         this.originalValue = value;
+        calculateEffectiveValue();
     }
 
     @Override
@@ -73,7 +85,16 @@ public class CellImpl implements Cell {
     @Override
     public void calculateEffectiveValue() {
         Expression expression = FunctionParser.parseExpression(originalValue);
-        effectiveValue = expression.eval(sheet, this);
+        EffectiveValue newEffectiveValue = expression.eval(sheet, this);
+        if (effectiveValue == null || !newEffectiveValue.getValue().equals(effectiveValue.getValue())) {
+            updateVersion(); // Update the cell's version
+        }
+        setEffectiveValue(newEffectiveValue);
+    }
+
+    void updateVersion()
+    {
+        version = sheet.getVersion();
     }
 
     @Override
