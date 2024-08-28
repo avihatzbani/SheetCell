@@ -2,7 +2,9 @@ package basics.coordinate.impl;
 
 import basics.coordinate.api.Coordinate;
 
-public class CoordinateImpl implements Coordinate {
+import java.io.Serializable;
+
+public class CoordinateImpl implements Coordinate, Serializable {
     private final String cellId; // e.g., "D5"
     private final int row;       // e.g., 4
     private final int column;

@@ -7,6 +7,8 @@ import basics.sheet.api.SheetReadActions;
 import basics.sheet.impl.SheetImpl;
 import calc.api.Expression;
 import parser.FunctionParser;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +16,7 @@ import java.util.Queue;
 
 import static basics.coordinate.impl.CoordinateFactory.*;
 
-public class CellImpl implements Cell {
+public class CellImpl implements Cell, Serializable {
 
     private final Coordinate coordinate;
     private String originalValue;

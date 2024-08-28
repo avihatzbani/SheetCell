@@ -7,9 +7,10 @@ import basics.coordinate.impl.CoordinateFactory;
 import basics.graph.GraphImpl.SheetGraph;
 import basics.sheet.api.Sheet;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class SheetImpl implements Sheet {
+public class SheetImpl implements Sheet, Serializable {
 
     private String name;
     private int rows;
@@ -230,7 +231,7 @@ public class SheetImpl implements Sheet {
     }
 
 
-    public void updateCell(String CellId, String newValue) {
+    public boolean updateCell(String CellId, String newValue) {
 
         Coordinate coordinate = CoordinateFactory.createCoordinate(CellId);
         // Step 1: Deep copy the current sheet
@@ -266,10 +267,12 @@ public class SheetImpl implements Sheet {
             // Step 5: If all updates are successful, replace the activeCells map in the current sheet
             this.activeCells = newSheet.activeCells;
             this.version = newSheet.version;
+            return true;
 
         } catch (Exception e) {
             // Step 6: Handle any exceptions (e.g., invalid expressions) and abort the update
             System.err.println("Error updating cell: " + e.getMessage());
+            return false;
             // The original sheet remains unchanged if any error occurs
         }
 

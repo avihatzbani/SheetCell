@@ -3,7 +3,9 @@ package basics.cell.impl;
 import basics.cell.api.CellType;
 import basics.cell.api.EffectiveValue;
 
-public class EffectiveValueImpl implements EffectiveValue {
+import java.io.Serializable;
+
+public class EffectiveValueImpl implements EffectiveValue, Serializable {
 
     private CellType cellType;
     private Object value;

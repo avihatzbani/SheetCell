@@ -1,19 +1,33 @@
 package engine.api;
 
+import basics.cell.api.Cell;
 import basics.coordinate.api.Coordinate;
+
+import java.util.List;
 //import basics.exceptions.InvalidCellReferenceException;
 //import basics.exceptions.CircularDependencyException;
 
 public interface Engine {
 
-    // Load a sheet from an XML file
-    void loadSheetFromXML(String xmlFilePath);
-
+    public byte[] serializeSheet(int version);
+    public int getRowCount();
+    public int getCurrentVersion();
+    public int getColumnCount();
+    public int getColumnWidth();
+    public String getCellEffectiveValue(String cellId);
+    public int getRowsHeight();
+    public boolean IsCellExists(String cellId);
+    public boolean isSheetExists();
+    public String getOriginalValue(String cellId);
+    public int getLastModifiedTimeCell(String cellId);
+    public List<String> getInfluencedCellsForCell(String cellId);
+    public List<String> getDependentCellsForCell(String cellId);
     // Update a cell's value
-    void updateCell(Coordinate coordinate, String newValue) /*throws InvalidCellReferenceException, CircularDependencyException*/ ;
+    public boolean isValidVersion(int version);
+    public boolean updateCell(String cellId, String newValue);
+    public byte[] getSheetByVersion(int version);
 
     // Get the effective value of a cell
-    String getCellValue(String CellId);
 
     // Additional methods as needed
 }

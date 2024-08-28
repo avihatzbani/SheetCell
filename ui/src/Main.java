@@ -1,5 +1,8 @@
+import UI.UIImpl.UIImpl;
+
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        UIImpl UI = new UIImpl();
+        UI.UI();
     }
 }
