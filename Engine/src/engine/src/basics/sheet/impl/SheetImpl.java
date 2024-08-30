@@ -20,6 +20,7 @@ public class SheetImpl implements Sheet, Serializable {
     private int version;
     private Map<Coordinate, Cell> activeCells;
     CoordinateFactory coordinateFactory;
+    private int numOfCellUpdated;
 
     public SheetImpl(String name, int rows, int column, int column_width_size, int rowsHeightSize, Map<Coordinate, Cell> activeCells, int version) {
         this.activeCells = activeCells;
@@ -56,26 +57,6 @@ public class SheetImpl implements Sheet, Serializable {
         // Check if the coordinate exists in the activeCells map
         return activeCells.containsKey(coordinate);
     }
-
-   /* @Override
-    public void setCell(String cellId, String value,SheetImpl sheet) {
-        // Get or create the Coordinate for the given cellId
-        Coordinate coordinate = CoordinateFactory.createCoordinate(cellId);
-
-        // Retrieve the cell from the map, or create it if it doesn't exist
-        Optional.ofNullable(activeCells.get(coordinate))
-                .or(() -> {
-                    // If cell doesn't exist, create a new one
-                    Cell newCell = new CellImpl(cellId, value, 1,sheet);
-                    activeCells.put(coordinate, newCell);
-                    return Optional.of(newCell);
-                })
-                .ifPresent(cell -> cell.setCellOriginalValue(value));
-
-
-        ////// need to set effective value as well !!!!!!!!!!!!
-    }
-*/
 
     // Getters and Setters
     @Override
@@ -175,6 +156,7 @@ public class SheetImpl implements Sheet, Serializable {
 
         // Step 3: Set the copied cells to the new sheet
         newSheet.activeCells = copiedCells;
+        newSheet.numOfCellUpdated = numOfCellUpdated;
 
         return newSheet;
     }
@@ -248,6 +230,7 @@ public class SheetImpl implements Sheet, Serializable {
             cellToUpdate.updateCellOriginalValue(newValue);
         }
 
+        newSheet.numOfCellUpdated = newSheet.getCell(CellId).getNumOfCellUpdated();
         try {
             // Step 3: Perform topological sort to detect cycles and get the correct update order
 
@@ -267,6 +250,7 @@ public class SheetImpl implements Sheet, Serializable {
             // Step 5: If all updates are successful, replace the activeCells map in the current sheet
             this.activeCells = newSheet.activeCells;
             this.version = newSheet.version;
+            this.numOfCellUpdated = newSheet.numOfCellUpdated;
             return true;
 
         } catch (Exception e) {
@@ -275,8 +259,15 @@ public class SheetImpl implements Sheet, Serializable {
             return false;
             // The original sheet remains unchanged if any error occurs
         }
-
-
     }
+
+
+        public int getNumOfUpdatedCells()
+        {
+        return numOfCellUpdated;
+        }
+
+
+
 };
 

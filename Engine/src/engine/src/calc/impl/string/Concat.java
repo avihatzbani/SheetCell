@@ -25,11 +25,15 @@ public class Concat implements Expression {
         EffectiveValue leftValue = left.eval(sheet, cell);
         EffectiveValue rightValue = right.eval(sheet, cell);
 
-        // Directly extract the string values and concatenate
-        String result = leftValue.extractValueWithExpectation(String.class) + rightValue.extractValueWithExpectation(String.class);
+        // Check if the values are strings or can be converted to strings
+        if (!isValidForConcatenation(leftValue) || !isValidForConcatenation(rightValue)) {
+            return new EffectiveValueImpl(CellType.STRING, "!UNDEFINED!");
+        }
 
-        // Return the concatenated result wrapped in EffectiveValueImpl
-        return new EffectiveValueImpl(CellType.STRING, result);
+        // Perform the concatenation
+        String leftStr = leftValue.getValue().toString();
+        String rightStr = rightValue.getValue().toString();
+        return new EffectiveValueImpl(CellType.STRING, leftStr + rightStr);
     }
 
 
@@ -53,4 +57,10 @@ public class Concat implements Expression {
         return Objects.hash(left, right);
     }
 
+
+
+    private boolean isValidForConcatenation(EffectiveValue value) {
+        return (value.getCellType() == CellType.STRING ||
+                value.getCellType() == CellType.BOOLEAN);
+    }
 }

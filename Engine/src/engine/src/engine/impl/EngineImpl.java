@@ -23,12 +23,13 @@ import static basics.coordinate.impl.CoordinateFactory.*;
 public class EngineImpl implements Engine {
     private SheetImpl sheetImpl;
     private Map<Integer, Sheet> versionedSheets = new HashMap<>();
+    private ArrayList<Integer> numOfUpdatedCells = new ArrayList<Integer>();
     private int currentVersion;
 
 
     public EngineImpl() {
         sheetImpl = null;
-        currentVersion = 0;
+        currentVersion = 1;
     }
     // Constructor that receives the XML file path and creates a SheetImpl from the XML data
     public EngineImpl(String xmlFilePath) {
@@ -47,13 +48,13 @@ public class EngineImpl implements Engine {
 
             // Step 5: Convert the STLSheet to a SheetImpl
             buildSheet(stlSheet);
-            saveSheetVersion();
-            // Optional: Print loaded data for verification
-            System.out.println("SheetImpl created with name: " + sheetImpl.getName());
 
         } catch (JAXBException e) {
             e.printStackTrace();
         }
+        SheetImpl versionedSheet = sheetImpl.deepCopy();
+        versionedSheets.put(versionedSheet.getVersion(), versionedSheet);
+        numOfUpdatedCells.add(sheetImpl.getActiveCells().size());
     }
 
     public boolean isValidVersion(int version) {
@@ -120,6 +121,7 @@ public class EngineImpl implements Engine {
 
         // Create the SheetImpl instance
         sheetImpl = new SheetImpl(name, rows, columns, columnWidthSize, rowHeightSize, activeCells, 1);
+        currentVersion = 1;
     }
 
     public void sendCell(String cellId){
@@ -155,12 +157,22 @@ public class EngineImpl implements Engine {
     private void saveSheetVersion() {
         // Create a copy of the current sheet and save it in the versionedSheets map
         SheetImpl versionedSheet = sheetImpl.deepCopy();
-        versionedSheets.put(sheetImpl.getVersion(), versionedSheet); //
+        versionedSheets.put(versionedSheet.getVersion(), versionedSheet);
+        numOfUpdatedCells.add(sheetImpl.getNumOfUpdatedCells());
+//
+    }
+
+    public String getSheetName(){
+        return sheetImpl.getName();
     }
 
     public int getCurrentVersion()
     {
         return currentVersion;
+    }
+    public int getSheetVersion()
+    {
+        return sheetImpl.getVersion();
     }
 
     @Override
@@ -199,15 +211,24 @@ public class EngineImpl implements Engine {
 
     public boolean updateCell(String cellId, String newValue)
     {
-        versionedSheets.put(sheetImpl.getVersion(), sheetImpl.deepCopy());
-        currentVersion++;
-        return sheetImpl.updateCell(cellId, newValue);
+
+        boolean updated = sheetImpl.updateCell(cellId, newValue);
+        if (updated) {
+            currentVersion++;
+            saveSheetVersion();
+        }
+
+        return updated;
 
     }
 
     public byte[] getSheetByVersion(int version){
         byte[] serializedSheet = serializeSheet(version);
         return serializedSheet;
+    }
+
+    public ArrayList<Integer> getNumOfUpdatedCells(){
+        return numOfUpdatedCells;
     }
 
 

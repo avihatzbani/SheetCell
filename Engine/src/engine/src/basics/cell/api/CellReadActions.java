@@ -11,4 +11,5 @@ public interface CellReadActions {
     int getVersion();
     List<Cell> getDependsOn();
     List<Cell> getInfluencingOn();
+    int getNumOfCellUpdated();
 }

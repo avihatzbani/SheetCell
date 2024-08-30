@@ -6,6 +6,6 @@ public interface CellUpdateActions {
     void setEffectiveValue(EffectiveValue value);
     void addCellToDependsOn(Cell cell);
     public void addCellToInfluenceOn(Cell cell);
-    public void updateInfluencedVersions();
+    public int updateInfluencedVersions();
     public void updateVersion();
 }

@@ -25,6 +25,7 @@ public class CellImpl implements Cell, Serializable {
     private final List<Cell> dependsOn;
     private final List<Cell> influencingOn;
     private final SheetReadActions sheet;
+    private int numOfCellUpdated;
 
     public CellImpl(String cellId, String originalValue, int version, SheetReadActions sheet) {
 
@@ -35,7 +36,7 @@ public class CellImpl implements Cell, Serializable {
         this.influencingOn = new ArrayList<>();
         this.sheet = sheet;
         calculateEffectiveValue();
-        updateInfluencedVersions();
+        numOfCellUpdated = updateInfluencedVersions();
 
     }
 
@@ -44,13 +45,14 @@ public class CellImpl implements Cell, Serializable {
     }
 
     public CellImpl(Cell cell, SheetImpl newSheet) {
-        this.coordinate = createCoordinate(cell.getCoordinate().getRow(), cell.getCoordinate().getColumn());
-        this.originalValue = cell.getOriginalValue();
-        this.sheet = newSheet;
-        this.version = cell.getVersion();
-        this.dependsOn = new ArrayList<>();
-        this.influencingOn = new ArrayList<>();
-        this.effectiveValue = cell.getEffectiveValue();
+        coordinate = createCoordinate(cell.getCoordinate().getRow(), cell.getCoordinate().getColumn());
+        originalValue = cell.getOriginalValue();
+        sheet = newSheet;
+        version = cell.getVersion();
+        dependsOn = new ArrayList<>();
+        influencingOn = new ArrayList<>();
+        effectiveValue = cell.getEffectiveValue();
+        numOfCellUpdated = cell.getNumOfCellUpdated();
 
     }
 
@@ -67,16 +69,20 @@ public class CellImpl implements Cell, Serializable {
 
     @Override
     public void updateCellOriginalValue(String value) {
-        if (value.equals(originalValue)) {
+
             for (Cell Influencing : dependsOn) {
                 Influencing.getInfluencingOn().remove(this);
             }
-
             this.dependsOn.clear();
-        }
+
         this.originalValue = value;
         calculateEffectiveValue();
-        updateInfluencedVersions();
+        numOfCellUpdated = updateInfluencedVersions();
+    }
+
+    public int getNumOfCellUpdated()
+    {
+        return numOfCellUpdated;
     }
 
     public void updateVersion() {
@@ -85,19 +91,22 @@ public class CellImpl implements Cell, Serializable {
     }
 
     @Override
-    public void updateInfluencedVersions() {
+    public int updateInfluencedVersions() {
         Queue<Cell> queue = new LinkedList<>();
         queue.add(this);
+        int counterInfluenced = 1;
 
         while (!queue.isEmpty()) {
             Cell current = queue.poll();
             for (Cell influenced : current.getInfluencingOn()) {
                 if (influenced.getVersion() != sheet.getVersion()) {
                     influenced.updateVersion(); // Update the version to match the sheet's version
-                    queue.add(influenced);  // Add to queue to update cells it influences
+                    queue.add(influenced);
+                    counterInfluenced++;// Add to queue to update cells it influences
                 }
             }
         }
+        return counterInfluenced;
     }
 
     @Override

@@ -15,4 +15,5 @@ public interface SheetReadActions {
     int getRowsHeightSize();
     boolean doesCellExist(String cellId);
     Map<Coordinate, Cell> getActiveCells();
+    public int getNumOfUpdatedCells();
 }
