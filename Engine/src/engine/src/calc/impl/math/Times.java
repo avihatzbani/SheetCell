@@ -26,10 +26,14 @@ public class Times implements Expression {
             double result=Double.NaN;
             return new EffectiveValueImpl(CellType.NUMERIC, result);
         }
-        //double result = (Double) leftValue.getValue() + (Double) rightValue.getValue();
-        double result = leftValue.extractValueWithExpectation(Double.class) * rightValue.extractValueWithExpectation(Double.class);
+        try {
+            double result = leftValue.extractValueWithExpectation(Double.class) * rightValue.extractValueWithExpectation(Double.class);
+            return new EffectiveValueImpl(CellType.NUMERIC, result);
 
-        return new EffectiveValueImpl(CellType.NUMERIC, result);    }
+        }
+        catch (Exception e) {
+            return new EffectiveValueImpl(CellType.NUMERIC, Double.NaN);
+        }            }
 
     @Override
     public CellType getFunctionResultType() {

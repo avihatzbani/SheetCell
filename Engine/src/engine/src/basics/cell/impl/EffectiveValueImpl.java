@@ -3,7 +3,9 @@ package basics.cell.impl;
 import basics.cell.api.CellType;
 import basics.cell.api.EffectiveValue;
 
-public class EffectiveValueImpl implements EffectiveValue {
+import java.io.Serializable;
+
+public class EffectiveValueImpl implements EffectiveValue, Serializable {
 
     private CellType cellType;
     private Object value;
@@ -24,12 +26,12 @@ public class EffectiveValueImpl implements EffectiveValue {
     }
 
     @Override
-    public <T> T extractValueWithExpectation(Class<T> type) {
+    public <T> T extractValueWithExpectation(Class<T> type) throws IllegalArgumentException{
         if (cellType.isAssignableFrom(type)) {
             return type.cast(value);
         }
-        // error handling... exception ? return null ?
-        return null;
+        else{ throw new IllegalArgumentException("Expected " + type + " but received " + value);}
+
     }
 
     @Override

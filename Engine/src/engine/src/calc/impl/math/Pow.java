@@ -27,9 +27,16 @@ public class Pow implements Expression {
             return new EffectiveValueImpl(CellType.NUMERIC, result);
         }
         //double result = (Double) leftValue.getValue() + (Double) rightValue.getValue();
-        double result = Math.pow(leftValue.extractValueWithExpectation(Double.class), rightValue.extractValueWithExpectation(Double.class));
 
-        return new EffectiveValueImpl(CellType.NUMERIC, result);
+
+        try {
+            double result =  Math.pow(leftValue.extractValueWithExpectation(Double.class) ,rightValue.extractValueWithExpectation(Double.class));
+            return new EffectiveValueImpl(CellType.NUMERIC, result);
+
+        }
+        catch (Exception e) {
+            return new EffectiveValueImpl(CellType.NUMERIC, Double.NaN);
+        }
     }
 
     @Override

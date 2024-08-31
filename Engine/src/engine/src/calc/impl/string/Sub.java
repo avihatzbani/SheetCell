@@ -38,6 +38,7 @@ public class Sub implements Expression {
             return new EffectiveValueImpl(CellType.STRING, "!UNDEFINED!");
         }
 
+
         // Perform substring operation
         String result = sourceStr.substring(start, end + 1);
 

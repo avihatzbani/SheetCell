@@ -26,14 +26,15 @@ public class Concat implements Expression {
         EffectiveValue rightValue = right.eval(sheet, cell);
 
         // Check if the values are strings or can be converted to strings
-        if (!isValidForConcatenation(leftValue) || !isValidForConcatenation(rightValue)) {
-            return new EffectiveValueImpl(CellType.STRING, "!UNDEFINED!");
+        try
+        {
+            String result =leftValue.extractValueWithExpectation(String.class) + rightValue.extractValueWithExpectation(String.class);
+            return new EffectiveValueImpl(CellType.STRING, result);
         }
+        catch (Exception e) {
+            return new EffectiveValueImpl(CellType.UNKNOWN, "!UNDEFINED!");
 
-        // Perform the concatenation
-        String leftStr = leftValue.getValue().toString();
-        String rightStr = rightValue.getValue().toString();
-        return new EffectiveValueImpl(CellType.STRING, leftStr + rightStr);
+        }
     }
 
 
@@ -57,10 +58,4 @@ public class Concat implements Expression {
         return Objects.hash(left, right);
     }
 
-
-
-    private boolean isValidForConcatenation(EffectiveValue value) {
-        return (value.getCellType() == CellType.STRING ||
-                value.getCellType() == CellType.BOOLEAN);
-    }
 }

@@ -2,7 +2,9 @@ package basics.coordinate.impl;
 
 import basics.coordinate.api.Coordinate;
 
-public class CoordinateImpl implements Coordinate {
+import java.io.Serializable;
+
+public class CoordinateImpl implements Coordinate, Serializable {
     private final String cellId; // e.g., "D5"
     private final int row;       // e.g., 4
     private final int column;
@@ -16,13 +18,22 @@ public class CoordinateImpl implements Coordinate {
 
 
     }
-    //Aviad
-    public CoordinateImpl(int row , int column) {
-        this.cellId = "" + row + column;
+    public CoordinateImpl(int row, int column) {
         this.row = row;
         this.column = column;
-
+        this.cellId = convertColumnIndexToLetters(column) + (row + 1);
     }
+
+    private String convertColumnIndexToLetters(int column) {
+        StringBuilder columnName = new StringBuilder();
+        while (column > 0) {
+            column--;  // Adjust for 1-based indexing
+            columnName.insert(0, (char) ('A' + (column % 26)));
+            column = column / 26;
+        }
+        return columnName.toString();
+    }
+
 
     // Parse the row number from the cell ID
     private int parseRowFromCellId(String cellId) {

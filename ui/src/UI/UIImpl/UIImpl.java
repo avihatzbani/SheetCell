@@ -1,4 +1,5 @@
 package UI.UIImpl;
+import basics.sheet.api.Sheet;
 import engine.api.*;
 import engine.impl.*;
 import java.io.ByteArrayInputStream;
@@ -187,7 +188,6 @@ public class UIImpl{
         }
         else {
             System.out.println("Cell ID: " + cellId);
-            System.out.println("Cell ID: " + cellId);
             System.out.println("Original value: " + engine.getOriginalValue(cellId));
             System.out.println("Effective value: " + engine.getCellEffectiveValue(cellId));
             System.out.println("Last modified in version: " + engine.getLastModifiedTimeCell(cellId));
@@ -226,7 +226,7 @@ public class UIImpl{
         }
 
         // Deserialize the sheet
-        basics.sheet.api.Sheet sheet;
+        Sheet sheet;
         try (ByteArrayInputStream bis = new ByteArrayInputStream(serializedSheet);
              ObjectInputStream in = new ObjectInputStream(bis)) {
             sheet = (basics.sheet.api.Sheet) in.readObject();

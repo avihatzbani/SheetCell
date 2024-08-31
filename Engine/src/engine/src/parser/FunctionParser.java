@@ -22,8 +22,14 @@ public enum FunctionParser {
                 throw new IllegalArgumentException("Invalid number of arguments for IDENTITY function. Expected 1, but got " + arguments.size());
             }
 
+
+
             // all is good. create the relevant function instance
             String actualValue = arguments.get(0);
+            if (actualValue.isEmpty())
+            {
+                return new IdentityExpression("",CellType.STRING);
+            }
             if (isBoolean(actualValue)) {
                 return new IdentityExpression(Boolean.parseBoolean(actualValue), CellType.BOOLEAN);
             } else if (isNumeric(actualValue)) {
@@ -84,7 +90,11 @@ public enum FunctionParser {
             Expression right = parseExpression(arguments.get(1).trim());
 
             // more validations on the expected argument types
-            if (!left.getFunctionResultType().equals(CellType.NUMERIC) || !right.getFunctionResultType().equals(CellType.NUMERIC)) {
+            if (((!left.getFunctionResultType().equals(CellType.NUMERIC))
+                    && (!left.getFunctionResultType().equals(CellType.UNKNOWN)))
+                    ||
+                    ((!right.getFunctionResultType().equals(CellType.NUMERIC))
+                            && (!right.getFunctionResultType().equals(CellType.UNKNOWN)))) {
                 throw new IllegalArgumentException("Invalid argument types for MINUS function. Expected NUMERIC, but got " + left.getFunctionResultType() + " and " + right.getFunctionResultType());
             }
 
@@ -105,7 +115,11 @@ public enum FunctionParser {
             Expression right = parseExpression(arguments.get(1).trim());
 
             // Validate that both arguments are numeric
-            if (!left.getFunctionResultType().equals(CellType.NUMERIC) || !right.getFunctionResultType().equals(CellType.NUMERIC)) {
+            if (((!left.getFunctionResultType().equals(CellType.NUMERIC))
+                    && (!left.getFunctionResultType().equals(CellType.UNKNOWN)))
+                    ||
+                    ((!right.getFunctionResultType().equals(CellType.NUMERIC))
+                            && (!right.getFunctionResultType().equals(CellType.UNKNOWN)))) {
                 throw new IllegalArgumentException("Invalid argument types for TIMES function. Expected NUMERIC, but got " + left.getFunctionResultType() + " and " + right.getFunctionResultType());
             }
 
@@ -126,7 +140,11 @@ public enum FunctionParser {
             Expression denominator = parseExpression(arguments.get(1).trim());
 
             // Validate that both arguments are numeric
-            if (!numerator.getFunctionResultType().equals(CellType.NUMERIC) || !denominator.getFunctionResultType().equals(CellType.NUMERIC)) {
+            if (((!numerator.getFunctionResultType().equals(CellType.NUMERIC))
+                    && (!numerator.getFunctionResultType().equals(CellType.UNKNOWN)))
+                    ||
+                    ((!denominator.getFunctionResultType().equals(CellType.NUMERIC))
+                            && (!denominator.getFunctionResultType().equals(CellType.UNKNOWN)))) {
                 throw new IllegalArgumentException("Invalid argument types for DIVIDE function. Expected NUMERIC, but got " + numerator.getFunctionResultType() + " and " + denominator.getFunctionResultType());
             }
 
@@ -205,8 +223,8 @@ public enum FunctionParser {
             }
 
             // Parse both arguments
-            Expression str1 = parseExpression(arguments.get(0));
-            Expression str2 = parseExpression(arguments.get(1));
+            Expression str1 = parseExpression(arguments.get(0).trim());
+            Expression str2 = parseExpression(arguments.get(1).trim());
 
             // Validate that both arguments are of type STRING
             if (((!str1.getFunctionResultType().equals(CellType.STRING)) &&

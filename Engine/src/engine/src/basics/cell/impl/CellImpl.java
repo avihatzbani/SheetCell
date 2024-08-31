@@ -77,6 +77,7 @@ public class CellImpl implements Cell, Serializable {
 
         this.originalValue = value;
         calculateEffectiveValue();
+        version = sheet.getVersion();
         numOfCellUpdated = updateInfluencedVersions();
     }
 

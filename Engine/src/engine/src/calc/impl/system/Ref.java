@@ -4,6 +4,7 @@ import basics.cell.api.Cell;
 import basics.cell.api.CellType;
 import basics.cell.api.EffectiveValue;
 import basics.cell.impl.CellImpl;
+import basics.cell.impl.EffectiveValueImpl;
 import basics.coordinate.api.Coordinate;
 import basics.sheet.api.Sheet;
 import basics.sheet.api.SheetReadActions;
@@ -34,7 +35,9 @@ public class Ref implements Expression {
         independent = sheet.getActiveCells().get(coordinate);
         independent.addCellToInfluenceOn(cell);
         cell.addCellToDependsOn(independent);
-        return independent.getEffectiveValue();
+        EffectiveValue IndependentEffective = independent.getEffectiveValue();
+
+        return new EffectiveValueImpl(IndependentEffective.getCellType(),IndependentEffective.getValue());
  }
 
 

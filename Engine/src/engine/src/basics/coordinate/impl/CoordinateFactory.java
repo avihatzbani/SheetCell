@@ -1,10 +1,12 @@
 package basics.coordinate.impl;
 
 import basics.coordinate.api.Coordinate;
+
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CoordinateFactory {
+public class CoordinateFactory implements Serializable {
     private static Map<String, Coordinate> cachedCoordinates = new HashMap<>();
 
     public static Coordinate createCoordinate(String cellId) {
