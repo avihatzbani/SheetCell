@@ -1,52 +1,43 @@
 package engine.api;
-
-import basics.cell.api.Cell;
-import basics.coordinate.api.Coordinate;
+import basics.sheet.api.SheetReadActions;
+import basics.sheet.impl.SheetImpl;
 
 import java.util.ArrayList;
 import java.util.List;
-//import basics.exceptions.InvalidCellReferenceException;
-//import basics.exceptions.CircularDependencyException;
+
 
 public interface Engine {
 
-    public byte[] serializeSheet(int version);
+     byte[] serializeSheet(int version);
 
-    public int getRowCount();
 
-    public int getCurrentVersion();
 
-    public int getColumnCount();
+     String getCellEffectiveValue(String cellId);
 
-    public int getColumnWidth();
+     boolean IsCellExists(String cellId);
 
-    public String getCellEffectiveValue(String cellId);
+     boolean isSheetExists();
 
-    public int getRowsHeight();
+     String getOriginalValue(String cellId);
 
-    public boolean IsCellExists(String cellId);
+     int getLastModifiedTimeCell(String cellId);
 
-    public boolean isSheetExists();
+     List<String> getInfluencedCellsForCell(String cellId);
 
-    public String getOriginalValue(String cellId);
+     List<String> getDependentCellsForCell(String cellId);
 
-    public int getLastModifiedTimeCell(String cellId);
+     boolean isValidVersion(int version);
 
-    public List<String> getInfluencedCellsForCell(String cellId);
+     boolean updateCell(String cellId, String newValue);
 
-    public List<String> getDependentCellsForCell(String cellId);
+     byte[] getSheetByVersion(int version);
 
-    // Update a cell's value
-    public boolean isValidVersion(int version);
+     ArrayList<Integer> getNumOfUpdatedCells();  // Get the effective value of a cell
 
-    public boolean updateCell(String cellId, String newValue);
+     String getSheetName();
 
-    public byte[] getSheetByVersion(int version);
+     SheetImpl getSheet();
 
-    public ArrayList<Integer> getNumOfUpdatedCells();  // Get the effective value of a cell
-
-    public String getSheetName();
-
-    public int getSheetVersion();
 }
+
 

@@ -50,7 +50,7 @@ public class CoordinateFactory implements Serializable {
         StringBuilder columnLetter = new StringBuilder();
 
         // Adjust column index to handle 0-based indexing
-        columnIndex++;  // Increment by 1 to handle 0-based index correctly
+        columnIndex++;
 
         while (columnIndex > 0) {
             int remainder = (columnIndex - 1) % 26;

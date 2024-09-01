@@ -161,58 +161,6 @@ public class SheetImpl implements Sheet, Serializable {
         return newSheet;
     }
 
-
-
-    public void printSheet(Map<Coordinate, Cell> activeCells) {
-        // Print sheet name and version
-        System.out.println("Sheet Name: " + getName());
-        System.out.println("Version: " + String.format("%02d", getVersion()));
-
-        // Print column headers (A, B, C, ...)
-        System.out.print("    ");  // Padding for rows numbers
-        for (int colIndex = 0; colIndex < getColumns(); colIndex++) {
-            String columnLetter = CoordinateFactory.convertToColumnLetter(colIndex);
-            System.out.print(String.format("%-" + getColumnsWidthSize() + "s", columnLetter)); // Column width formatting
-            if (colIndex != getColumns() - 1) {
-                System.out.print("|");  // Separator between columns
-            }
-        }
-        System.out.println();  // Move to the next line after the headers
-
-        // Iterate through each rows
-        for (int rowsIndex = 0; rowsIndex < getRows(); rowsIndex++) {
-            // Print rows number, formatted to 2 digits (e.g., 01, 02)
-            System.out.print(String.format("%02d  ", rowsIndex + 1));
-
-            // Iterate through each column in the rows
-            for (int colIndex = 0; colIndex < getColumns(); colIndex++) {
-                // Convert rows and column indices to a cell ID (e.g., A1, B2, ...)
-                String cellId = CoordinateFactory.convertToCellReference(rowsIndex, colIndex);
-                Coordinate coordinate = CoordinateFactory.createCoordinate(cellId);
-                // Check if the cellId exists in the activeCells map
-                Cell cell = activeCells.get(coordinate);
-
-                // Print the cell value if present, otherwise print an empty string
-                String cellValue = (cell != null && cell.getEffectiveValue() != null) ? cell.getEffectiveValue().toString() : "";
-                // @print Test String cellOriginalValue = (cell != null && cell.getOriginalValue() != null) ? cell.getOriginalValue() : "";
-                // Print the cell value, formatted to fit the column width
-                System.out.print(String.format("%-" + getColumnsWidthSize() + "s", cellValue));
-                //@print Test System.out.print(String.format("%-" + getColumnsWidthSize() + "s", cellOriginalValue));
-
-                // Print the column separator unless it's the last column
-                if (colIndex != getColumns() - 1) {
-                    System.out.print("|");
-                }
-            }
-            // Move to the next line after finishing the current rows
-            System.out.println();
-        }
-
-
-
-    }
-
-
     public boolean updateCell(String CellId, String newValue) {
 
         Coordinate coordinate = CoordinateFactory.createCoordinate(CellId);
@@ -269,5 +217,7 @@ public class SheetImpl implements Sheet, Serializable {
 
 
 
-};
+
+
+}
 

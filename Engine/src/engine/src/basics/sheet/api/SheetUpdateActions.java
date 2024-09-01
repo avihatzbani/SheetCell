@@ -11,7 +11,6 @@ public interface SheetUpdateActions {
     void setColumnsWidthSize(int column_width_size);
     void setRowsHeightSize(int row_height_size);
     void setActiveCells(CellImpl cell);
-
-
+     boolean updateCell(String cellId, String newValue);
 
 }

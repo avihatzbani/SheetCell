@@ -3,6 +3,7 @@ import basics.cell.api.Cell;
 import basics.cell.impl.CellImpl;
 import basics.coordinate.api.Coordinate;
 import basics.sheet.api.Sheet;
+import basics.sheet.api.SheetReadActions;
 import basics.sheet.impl.SheetImpl;
 import engine.api.Engine;
 import jakarta.xml.bind.JAXBContext;
@@ -23,38 +24,46 @@ import static basics.coordinate.impl.CoordinateFactory.*;
 public class EngineImpl implements Engine {
     private SheetImpl sheetImpl;
     private Map<Integer, Sheet> versionedSheets = new HashMap<>();
-    private ArrayList<Integer> numOfUpdatedCells = new ArrayList<Integer>();
+    private ArrayList<Integer> numOfUpdatedCells = new ArrayList<>();
     private int currentVersion;
-
+    private static final int ROWS = 50;
+    private static final int COLS = 20;
+    private static final int MIN = 1;
 
     public EngineImpl() {
         sheetImpl = null;
         currentVersion = 1;
     }
+
     // Constructor that receives the XML file path and creates a SheetImpl from the XML data
-    public EngineImpl(String xmlFilePath) {
+    public EngineImpl(String xmlFilePath) throws IllegalArgumentException, JAXBException {
         try {
-            // Step 1: Create a JAXB context for the root class (STLSheet)
             JAXBContext context = JAXBContext.newInstance(STLSheet.class);
-
-            // Step 2: Create an Unmarshaller
             Unmarshaller unmarshaller = context.createUnmarshaller();
-
-            // Step 3: Specify the path to the XML file
             File xmlFile = new File(xmlFilePath);
-
-            // Step 4: Unmarshal the XML content into an instance of the root class (STLSheet)
             STLSheet stlSheet = (STLSheet) unmarshaller.unmarshal(xmlFile);
-
-            // Step 5: Convert the STLSheet to a SheetImpl
-            buildSheet(stlSheet);
-
+            if (!isSheetValidColumnRow(stlSheet)) {
+                throw new IllegalArgumentException("Illegal size of Sheet.");
+            }
+            else {
+                buildSheet(stlSheet);
+                SheetImpl versionedSheet = sheetImpl.deepCopy();
+                versionedSheets.put(versionedSheet.getVersion(), versionedSheet);
+                numOfUpdatedCells.add(sheetImpl.getActiveCells().size());
+            }
         } catch (JAXBException e) {
-            e.printStackTrace();
+            throw new JAXBException("Invalid XML file.");
         }
-        SheetImpl versionedSheet = sheetImpl.deepCopy();
-        versionedSheets.put(versionedSheet.getVersion(), versionedSheet);
-        numOfUpdatedCells.add(sheetImpl.getActiveCells().size());
+    }
+
+
+    private boolean isSheetValidColumnRow(STLSheet sheet){
+        int rows = sheet.getSTLLayout().getRows();
+        int col = sheet.getSTLLayout().getColumns();
+
+        return ((rows <= ROWS) && (rows >=MIN) && (col>=MIN) && (col<= COLS));
+
+
     }
 
     public boolean isValidVersion(int version) {
@@ -123,22 +132,6 @@ public class EngineImpl implements Engine {
         sheetImpl = new SheetImpl(name, rows, columns, columnWidthSize, rowHeightSize, activeCells, 1);
         currentVersion = 1;
     }
-
-    public void sendCell(String cellId){
-        Cell cell = sheetImpl.getCell(cellId);
-
-
-    }
-
-    public static void main(String[] args) {
-        EngineImpl engine = new EngineImpl("C:\\Users\\aviha\\CS_secondyear\\java_course\\jaxb-ri\\basic.xml");
-        engine.showSheetImpl();
-    }
-
-    public void showSheetImpl(){
-        sheetImpl.printSheet(sheetImpl.getActiveCells());
-    }
-
     @Override
     public byte[] serializeSheet(int version)
     {
@@ -152,6 +145,11 @@ public class EngineImpl implements Engine {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public SheetImpl getSheet()
+    {
+        return sheetImpl;
     }
 
     private void saveSheetVersion() {
@@ -170,35 +168,14 @@ public class EngineImpl implements Engine {
     {
         return currentVersion;
     }
-    public int getSheetVersion()
-    {
-        return sheetImpl.getVersion();
-    }
 
-    @Override
-    public int getRowCount() {
-        return sheetImpl != null ? sheetImpl.getRows() : 0;
-    }
 
-    @Override
-    public int getColumnCount() {
-        return sheetImpl != null ? sheetImpl.getColumns() : 0;
-    }
-
-    @Override
-    public int getColumnWidth() {
-        return sheetImpl != null ? sheetImpl.getColumnsWidthSize() : 0;
-    }
     public String getCellEffectiveValue(String cellId)
     {
         if (sheetImpl.getCell(cellId) != null)
             return sheetImpl.getCell(cellId).getEffectiveValue().getValue().toString();
         else
             return null;
-    }
-
-    public int getRowsHeight() {
-        return sheetImpl != null ? sheetImpl.getRowsHeightSize() : 0;
     }
 
     public boolean IsCellExists(String cellId) {

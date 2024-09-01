@@ -5,10 +5,9 @@ import basics.coordinate.api.Coordinate;
 import java.io.Serializable;
 
 public class CoordinateImpl implements Coordinate, Serializable {
-    private final String cellId; // e.g., "D5"
-    private final int row;       // e.g., 4
+    private final String cellId;
+    private final int row;
     private final int column;
-    private CoordinateFactory cache;// e.g., 4
 
     // Constructor that takes the cell ID and calculates row/column
     public CoordinateImpl(String cellId) {

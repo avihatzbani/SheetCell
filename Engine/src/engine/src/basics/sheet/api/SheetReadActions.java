@@ -2,6 +2,7 @@ package basics.sheet.api;
 
 import basics.cell.api.Cell;
 import basics.coordinate.api.Coordinate;
+import basics.sheet.impl.SheetImpl;
 
 import java.util.Map;
 
@@ -15,5 +16,7 @@ public interface SheetReadActions {
     int getRowsHeightSize();
     boolean doesCellExist(String cellId);
     Map<Coordinate, Cell> getActiveCells();
-    public int getNumOfUpdatedCells();
+     int getNumOfUpdatedCells();
+     SheetImpl deepCopy();
+
 }
