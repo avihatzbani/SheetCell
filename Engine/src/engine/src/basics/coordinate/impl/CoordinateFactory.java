@@ -10,20 +10,20 @@ public class CoordinateFactory implements Serializable {
     private static Map<String, Coordinate> cachedCoordinates = new HashMap<>();
 
     public static Coordinate createCoordinate(String cellId) {
-        if (cellId.length()!=2)
-            throw new IllegalArgumentException("Invalid cell ID");
         cellId = cellId.substring(0,1).toUpperCase() + cellId.substring(1);
         // Use cellId like "D5" as the key in the cache
         if (cachedCoordinates.containsKey(cellId)) {
             return cachedCoordinates.get(cellId);
         }
-
+        else
+        {
         // Create and cache the coordinate
         Coordinate coordinate = new CoordinateImpl(cellId);
         cachedCoordinates.put(cellId, coordinate);
 
         return coordinate;
     }
+        }
 
     //Aviad
     public static Coordinate createCoordinate(int row, int column) {
@@ -37,6 +37,8 @@ public class CoordinateFactory implements Serializable {
 
         return coordinate;
     }
+
+
 
     // Utility methods for cell reference conversions (can be used for printing)
     public static String convertToCellReference(int rowIndex, int columnIndex) {
@@ -60,7 +62,17 @@ public class CoordinateFactory implements Serializable {
 
         return columnLetter.toString();
     }
-    //Aviad
+
+    public static int convertToColumnIndex(char columnLetter) {
+        // Ensure the input is an uppercase letter
+        if (columnLetter < 'A' || columnLetter > 'Z') {
+            throw new IllegalArgumentException("Invalid column letter: " + columnLetter);
+        }
+
+        return (columnLetter - 'A' + 1); // Convert the letter to a 0-based index
+    }
+
+
     public static Coordinate from(String trim) {
         try {
             String[] parts = trim.split(":");

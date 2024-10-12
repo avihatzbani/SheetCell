@@ -22,12 +22,11 @@ public class Minus implements Expression {
     public EffectiveValue eval(SheetReadActions sheet, Cell cell) {
         EffectiveValue leftValue = left.eval(sheet, cell);
         EffectiveValue rightValue = right.eval(sheet, cell);
-
         if (leftValue.getValue().equals(Double.NaN) || rightValue.getValue().equals(Double.NaN)) {
             double result=Double.NaN;
             return new EffectiveValueImpl(CellType.NUMERIC, result);
         }
-        //double result = (Double) leftValue.getValue() + (Double) rightValue.getValue();
+
         try {
             double result = leftValue.extractValueWithExpectation(Double.class) - rightValue.extractValueWithExpectation(Double.class);
             return new EffectiveValueImpl(CellType.NUMERIC, result);

@@ -19,7 +19,6 @@ public class SheetImpl implements Sheet, Serializable {
     private int rowsHeightSize;
     private int version;
     private Map<Coordinate, Cell> activeCells;
-    CoordinateFactory coordinateFactory;
     private int numOfCellUpdated;
 
     public SheetImpl(String name, int rows, int column, int column_width_size, int rowsHeightSize, Map<Coordinate, Cell> activeCells, int version) {
@@ -30,7 +29,6 @@ public class SheetImpl implements Sheet, Serializable {
         this.columnWidthSize = column_width_size;
         this.rowsHeightSize = rowsHeightSize;
         this.version = version;
-        CoordinateFactory coordinateFactory = new CoordinateFactory();
     }
 
     @Override
