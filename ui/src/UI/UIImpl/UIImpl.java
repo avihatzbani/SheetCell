@@ -1,5 +1,6 @@
 package UI.UIImpl;
 import basics.cell.api.Cell;
+import basics.coordinate.impl.CoordinateFactory;
 import basics.sheet.api.Sheet;
 import engine.api.*;
 import engine.impl.*;
@@ -13,6 +14,8 @@ import java.util.*;
 public class UIImpl{
         private Engine engine;  // No final keyword if you plan to initialize it later
         private  Scanner scanner;
+        private int rowsLimitForSheet;
+        private int columnsLimitForSheet;
 
         // Empty constructor
         public void UI() {
@@ -33,8 +36,15 @@ public class UIImpl{
                 System.out.println("5. Display versions");
                 System.out.println("6. Exit");
 
-                int choice = scanner.nextInt();
-                scanner.nextLine();  // Consume newline
+                int choice = readChoice();
+
+                // Check if the choice is valid
+                if (choice < 1 || choice > 6) {
+                    System.out.println("Invalid choice. Enter a number between 1 and 6.");
+                    continue; // Go back to the beginning of the loop
+                }
+
+
 
                 switch (choice) {
                     case 1:
@@ -55,11 +65,12 @@ public class UIImpl{
                     case 6:
                         System.out.println("Exiting the system...");
                         return;
-                        default: System.out.println("Invalid choice");
+
+                        default: System.out.println("Invalid choice,Enter valid number (1-6)");
                 }
             }
             catch (Exception e) {
-                System.out.println("Invalid Input. Enter valid number.");
+                System.out.println(e.getMessage());
                 scanner.nextLine();
             }
         }
@@ -73,6 +84,7 @@ public class UIImpl{
             EngineImpl engineImpl = new EngineImpl(filePath);
             System.out.println("File loaded successfully and the sheet is now active.");
             engine = engineImpl;
+            setLayout();
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         } catch (JAXBException e) {
@@ -80,7 +92,24 @@ public class UIImpl{
         }
     }
 
-
+    private int readChoice() {
+        while (true) {
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+                return choice;
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Clear the invalid input
+            }
+        }
+    }
+    private void setLayout()
+    {
+        Sheet sheet = engine.getSheet();
+        rowsLimitForSheet = sheet.getRows();
+        columnsLimitForSheet = sheet.getColumns();
+    }
     private void displayCurrentSheet() {
                // Display the sheet
         printSheet(engine.getSheet());
@@ -91,40 +120,46 @@ public class UIImpl{
     private void displaySingleCell() {
         System.out.println("Enter the cell ID:");
         String cellId = scanner.nextLine();
-
         if (!engine.isSheetExists()) {
             System.out.println("No sheet is currently loaded.");
             return;
         }
-        if(!engine.IsCellExists(cellId)) {
+        try {
+            checkValidCellId(cellId);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return;
+        }
+
+
+        if (!engine.IsCellExists(cellId)) {
             printNonExistingCell(cellId);
-        }
-        else {
+        } else {
             printExistingCell(cellId);
-        }
+            List<String> Influencing = engine.getInfluencedCellsForCell(cellId);
+            List<String> DependsOn = engine.getDependentCellsForCell(cellId);
 
-        List<String> Influencing = engine.getInfluencedCellsForCell(cellId);
-        List<String> DependsOn = engine.getDependentCellsForCell(cellId);
-
-        if (Influencing.isEmpty()) {
-            System.out.println("Cells that depend on this cell: None");
-        } else {
-            String result = "";
-            for (String id : Influencing )
-                result += id + " ";
-            System.out.println("Cells that depend on this cell: " + result);
-        }
-
-        if (DependsOn.isEmpty()) {
-            System.out.println("Cells that influence on this cell: None");
-        } else {
-            String result = "";
-            for (String id : DependsOn ) {
-                result += id + " ";
+            if (Influencing.isEmpty()) {
+                System.out.println("Cells that depend on this cell: None");
+            } else {
+                String result = "";
+                for (String id : Influencing)
+                    result += id + " ";
+                System.out.println("Cells that depend on this cell: " + result);
             }
-            System.out.println("Cells that influence on this cell: " + result);
+
+            if (DependsOn.isEmpty()) {
+                System.out.println("Cells that influence on this cell: None");
+            } else {
+                String result = "";
+                for (String id : DependsOn) {
+                    result += id + " ";
+                }
+                System.out.println("Cells that influence on this cell: " + result);
+            }
         }
     }
+
 
     private void updateSingleCell() {
         System.out.println("Enter the cell ID (e.g., A1):");
@@ -134,6 +169,15 @@ public class UIImpl{
             System.out.println("No sheet is currently loaded.");
             return;
         }
+
+        try{
+            checkValidCellId(cellId);
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+            return;
+        }
+
         if(!engine.IsCellExists(cellId)) {
             printNonExistingCell(cellId);
         }
@@ -154,6 +198,11 @@ public class UIImpl{
     }
 
     private void displaySheetByVersion() {
+
+        if (!engine.isSheetExists()) {
+            System.out.println("No sheet is currently loaded.");
+            return;
+        }
 
         displayVersionsChange();
         System.out.println("Enter a version number to view:");
@@ -255,6 +304,36 @@ public class UIImpl{
             }
 
         }
+
+
+    private void checkValidCellId(String cellId) throws IllegalArgumentException {
+        if (cellId == null || cellId.length() != 2) {
+            throw new IllegalArgumentException("Cell ID should be exactly 2 characters long, e.g., 'A1'.");
+        }
+
+        char columnLetter = Character.toUpperCase(cellId.charAt(0));
+        int rowNumber;
+
+        try {
+            rowNumber = Integer.parseInt(cellId.substring(1));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid row number - should be a number.");
+        }
+
+        // Convert column letter to 0-based index
+        int columnIndex = CoordinateFactory.convertToColumnIndex(columnLetter);
+        int rowIndex = rowNumber;
+
+        // Validate that the rowIndex and columnIndex are within the valid bounds
+        if (rowIndex <= 0 || rowIndex > rowsLimitForSheet) {
+            throw new IllegalArgumentException("Row index is out of bounds. Maximum rows: " + rowsLimitForSheet);
+        }
+
+        if (columnIndex < 0 || columnIndex >= columnsLimitForSheet) {
+            throw new IllegalArgumentException("Column index is out of bounds. Maximum columns: " + columnsLimitForSheet);
+        }
+    }
+
     private void printExistingCell(String cellId){
         System.out.println("Cell ID: " + cellId);
         System.out.println("Original value: " + engine.getOriginalValue(cellId));
@@ -263,7 +342,6 @@ public class UIImpl{
 
     }
     private void printNonExistingCell(String cellId){
-        System.out.println("Cell not found.");
         System.out.println("Cell ID: " + cellId);
         System.out.println("Original value: None.");
         System.out.println("Effective value: None.");
